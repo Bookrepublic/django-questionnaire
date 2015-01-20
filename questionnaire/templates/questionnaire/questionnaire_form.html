@@ -1,0 +1,37 @@
+<h1>Welcome to {{ survey.name|title }}</h1>
+<div class="survey-description">
+    {{ survey.description|safe }}
+</div>
+
+<div>
+    <form action="." method="post">{% csrf_token %}
+        {% for q_set in question_set %}
+            <h1>{{ q_set }}</h1>
+            <ul>
+            {% for field in form %}
+                {% if field.field.widget.attrs.question_set == q_set.id %}
+                    <li class="q-item">
+                        {% if field.field.required %}
+                            <div class="field-wrapper question-required">
+                            {{ field.errors }}
+                            <span class="asterix"> * </span><label class="label-inline">{{ field.label }}</label>
+                        {% else %}
+                            <div class="field-wrapper">
+                            {{ field.errors }}
+                            <label class="label-inline">{{ field.label }}</label>
+                        {% endif %}
+                        <span class="form-help-text">{{ field.help_text }}</span>
+
+                        <div class="form-field-body">
+                            {{ field }}
+                        </div>
+                        </div>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            </ul>
+        {% endfor %}
+
+        <div class="submit-button"><input type="submit" value="I'm done!"></div>
+    </form>
+</div>

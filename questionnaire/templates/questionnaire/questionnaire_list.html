@@ -1,0 +1,4 @@
+Lista Sondaggi:<br/>
+{% for s in object_list %}
+    <a href="{% url questionnaire_form s.slug %}">{{ s }}</a><br/>
+{% endfor %}
