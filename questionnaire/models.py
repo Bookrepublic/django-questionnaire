@@ -51,7 +51,7 @@ class QuestionSet(models.Model):
     heading = models.CharField(max_length=250)
 
     def __unicode__(self):
-        return u"%s" % (self.questionnaire, self.heading)
+        return u"%s" % (self.heading,)
 
     class Meta:
         ordering = ('ordering',)
