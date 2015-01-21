@@ -79,6 +79,7 @@ class Question(models.Model):
         "multiple-choice gives the user a number of choices he/she can " \
         "choose from. If a question is multiple-choice, enter the choices " \
         "this user can choose from below'.")
+    required = models.BooleanField(default=True)
 
     def get_choices(self):
         """parse the choices field and return a tuple formatted appropriately

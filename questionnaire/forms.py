@@ -25,4 +25,8 @@ class QuestionForm(forms.Form):
                                                                       widget=forms.RadioSelect(
                                                                           renderer=HorizontalRadioRenderer),
                                                                       choices=question_choices)
+
+            if not q.required:
+                self.fields["question_%d" % q.pk].required = False
+
             self.fields["question_%d" % q.pk].widget.attrs["question_set"] = q.questionset_id
