@@ -48,7 +48,7 @@ class QuestionSet(models.Model):
     """Which questions to display on a question page"""
     questionnaire = models.ForeignKey(Questionnaire, related_name='question_set')
     ordering = models.IntegerField()
-    heading = models.CharField(max_length=250)
+    heading = models.TextField()
 
     def __unicode__(self):
         return u"%s" % (self.heading,)
