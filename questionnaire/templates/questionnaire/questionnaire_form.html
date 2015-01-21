@@ -6,7 +6,7 @@
 <div>
     <form action="." method="post">{% csrf_token %}
         {% for q_set in question_set %}
-            <h1>{{ q_set }}</h1>
+            {{ q_set.heading|safe }}
             <ul>
             {% for field in form %}
                 {% if field.field.widget.attrs.question_set == q_set.id %}
