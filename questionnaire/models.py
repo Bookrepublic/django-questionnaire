@@ -1,6 +1,11 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
+
+
+class StatRisposte:
+    pass
 
 
 class Questionnaire(models.Model):
@@ -13,15 +18,40 @@ class Questionnaire(models.Model):
     def questions(self):
         return Question.objects.filter(questionset__questionnaire=self)
 
+    def utenti_risposto(self):
+        return self.response.all().count()
+
+    def statistiche_risposte(self):
+        d_answer = {}
+        answer_agg = Answer.objects.filter(response__questionnaire=1).values('question', 'body').annotate(risposte=Count('body'))
+        for a in answer_agg:
+            d_answer[(a['question'], a['body'])] = a['risposte']
+
+        stat_risp = []
+        for q_set in self.question_set.all():
+            sr = StatRisposte()
+            sr.heading = q_set.heading
+            sr.questions = []
+            for q in q_set.questions.all():
+                sq = StatRisposte()
+                sq.domanda = q.text
+                sq.choices = []
+                for c in q.choices.all():
+                    num_risposte = d_answer.get((q.pk, c.text), 0)
+                    sq.choices.append([c, num_risposte])
+                sr.questions.append(sq)
+            stat_risp.append(sr)
+        return stat_risp
+
 
 class QuestionSet(models.Model):
     """Which questions to display on a question page"""
     questionnaire = models.ForeignKey(Questionnaire, related_name='question_set')
     ordering = models.IntegerField()
-    heading = models.CharField(max_length=64)
+    heading = models.CharField(max_length=250)
 
     def __unicode__(self):
-        return u"%s - %s" % (self.questionnaire, self.heading)
+        return u"%s" % (self.questionnaire, self.heading)
 
     class Meta:
         ordering = ('ordering',)
@@ -84,7 +114,7 @@ class Response(models.Model):
     # unique interview uuid
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    questionnaire = models.ForeignKey(Questionnaire)
+    questionnaire = models.ForeignKey(Questionnaire, related_name='response')
     user = models.ForeignKey(User)
 
     def __unicode__(self):
@@ -97,3 +127,6 @@ class Answer(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     body = models.TextField(blank=True, null=True)
+
+    def __unicode__(self):
+        return ("%s. Risposta : %s" % (self.question.text, self.body))

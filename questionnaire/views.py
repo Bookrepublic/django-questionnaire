@@ -1,6 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.views.generic import ListView, FormView, TemplateView
+from django.views.generic import ListView, FormView, TemplateView, DetailView
 from questionnaire.forms import QuestionForm
 from questionnaire.models import Questionnaire, Response, Question, Answer
 
@@ -60,3 +60,8 @@ class QuestionnaireForm(FormView):
 
 class QuestionnaireThankYou(TemplateView):
     template_name = 'questionnaire/questionnaire_thank_you.html'
+
+
+class QuestionnaireStatistics(DetailView):
+    model = Questionnaire
+    template_name = 'questionnaire/admin/questionnaire_statistics.html'

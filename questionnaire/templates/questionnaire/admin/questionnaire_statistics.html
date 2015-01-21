@@ -1,0 +1,32 @@
+{% extends 'admin/change_form.html' %}
+
+{% block extrahead %}
+    {{ block.super }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="../../../">Home</a> &rsaquo;
+        <a href="../../">Questionnaire</a> &rsaquo;
+        Statistiche "{{ object }}"
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div id="content-main">
+        <fieldset class="module collapse">
+            <h2>Utenti che hanno risposto : {{ object.utenti_risposto }}</h2>
+            <div style="padding: 10px;">
+                {% for q_set_stat in object.statistiche_risposte %}
+                    <h2>{{ q_set_stat.heading }}</h2>
+                    {% for q_stat in q_set_stat.questions %}
+                        <h5>{{ q_stat.domanda }}</h5>
+                        {% for c in q_stat.choices %}
+                            Risposta : <b>{{ c.0.text }}</b> - Voti <b>{{ c.1 }}</b><br/>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </fieldset>
+    </div>
+{% endblock %}

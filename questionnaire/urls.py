@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from questionnaire.views import QuestionnaireList, QuestionnaireForm, QuestionnaireThankYou
+from questionnaire.views import QuestionnaireList, QuestionnaireForm, QuestionnaireThankYou, QuestionnaireStatistics
 
 
 urlpatterns = patterns('',
