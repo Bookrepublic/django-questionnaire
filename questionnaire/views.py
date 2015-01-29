@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.contrib.auth.views import redirect_to_login
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, FormView, TemplateView, DetailView
@@ -16,10 +18,25 @@ class QuestionnaireForm(FormView):
 
     def get(self, request, *args, **kwargs):
         self.questionnaire = Questionnaire.objects.get(slug=kwargs['slug'])
+
+        if self.questionnaire.is_closed:
+            return HttpResponseRedirect(reverse('questionnaire_closed', args=(self.questionnaire.slug,)))
+
+        if self.questionnaire.is_private and not request.user.is_authenticated():
+            path = request.META['PATH_INFO']
+            return redirect_to_login(path, settings.LOGIN_URL)
         return super(QuestionnaireForm, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.questionnaire = Questionnaire.objects.get(slug=kwargs['slug'])
+
+        if self.questionnaire.is_closed:
+            return HttpResponseRedirect(reverse('questionnaire_closed', args=(self.questionnaire.slug,)))
+
+        if self.questionnaire.is_private and not request.user.is_authenticated():
+            path = request.META['PATH_INFO']
+            return redirect_to_login(path, settings.LOGIN_URL)
+
         return super(QuestionnaireForm, self).post(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -33,10 +50,18 @@ class QuestionnaireForm(FormView):
         return context
 
     def form_valid(self, form):
+        # controllo se l'utente ha gia' votato (cercando o un id con la stessa sessione oppure, se e' loggato,
+        # delle risposte con quell'utente
+        if self.questionnaire.user_have_already_answered(self.request):
+            return HttpResponseRedirect(reverse('questionnaire_already_done', args=(self.questionnaire.slug,)))
+
         # save the response object
         response = Response()
         response.questionnaire = self.questionnaire
-        response.user = self.request.user
+        if self.request.user.is_authenticated():
+            response.user = self.request.user
+
+        response.sessionid = self.request.COOKIES[settings.SESSION_COOKIE_NAME]
         response.save()
 
         # create an answer object for each question and associate it with this
@@ -60,6 +85,14 @@ class QuestionnaireForm(FormView):
 
 class QuestionnaireThankYou(TemplateView):
     template_name = 'questionnaire/questionnaire_thank_you.html'
+
+
+class QuestionnaireAlreadyDone(TemplateView):
+    template_name = 'questionnaire/questionnaire_already_done.html'
+
+
+class QuestionnaireClosed(TemplateView):
+    template_name = 'questionnaire/questionnaire_closed.html'
 
 
 class QuestionnaireStatistics(DetailView):

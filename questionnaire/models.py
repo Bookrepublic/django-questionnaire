@@ -1,6 +1,7 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Count
+from django.db.models import Q, Count
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -9,8 +10,23 @@ class StatRisposte:
 
 
 class Questionnaire(models.Model):
+    OPEN = 'open'
+    CLOSED = 'closed'
+    STATUS_CHOICES = (
+        (OPEN, 'Open'),
+        (CLOSED, 'Close'),
+    )
+    PRIVATE = 'private'
+    PUBLIC = 'public'
+    PRIVACY_CHOICES = (
+        (PRIVATE, 'Private (only logged user)'),
+        (PUBLIC, 'Open to everyone'),
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=OPEN)
     name = models.CharField(max_length=128)
     slug = models.SlugField(max_length=128)
+    privacy = models.CharField(max_length=10, choices=PRIVACY_CHOICES, default=PRIVATE)
+    img_banner_home = models.ImageField(upload_to='banner_sondaggio', blank=True, null=True, help_text="Banner che verra' visualizzato in homepage. Per disabilitare selezionare la checkbox 'Cancella' e salvare")
 
     def __unicode__(self):
         return self.name
@@ -20,6 +36,28 @@ class Questionnaire(models.Model):
 
     def utenti_risposto(self):
         return self.response.all().count()
+
+    @property
+    def is_private(self):
+        return self.privacy == self.PRIVATE
+
+    @property
+    def is_closed(self):
+        return self.status == self.CLOSED
+
+    def user_have_already_answered(self, request):
+        already_answered = False
+        session_key = request.COOKIES[settings.SESSION_COOKIE_NAME]
+
+        q_filter = Q(sessionid=session_key)
+        if request.user.is_authenticated():
+            q_filter = Q(q_filter|Q(user=request.user))
+
+        answered = Response.objects.filter(q_filter)
+
+        if answered:
+            already_answered = True
+        return already_answered
 
     def statistiche_risposte(self):
         d_answer = {}
@@ -116,7 +154,9 @@ class Response(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     questionnaire = models.ForeignKey(Questionnaire, related_name='response')
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, blank=True, null=True)
+    # per gli utenti anonimi salvo la session id
+    sessionid = models.CharField(max_length=255, blank=True, null=True)
 
     def __unicode__(self):
         return ("response %s" % self.user)

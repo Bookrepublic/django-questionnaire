@@ -30,9 +30,14 @@ class QuestionnaireAdmin(admin.ModelAdmin):
         return "<a href='%s'>Dettagli</a>" % reverse('admin:questionnaire_statistics', args=(obj.pk,))
     _detail.allow_tags = True
 
+
+class ResponseAdmin(admin.ModelAdmin):
+    list_display = ('questionnaire', 'user', 'sessionid')
+
+
 admin.site.register(Questionnaire, QuestionnaireAdmin)
 admin.site.register(QuestionSet)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)
-admin.site.register(Response)
+admin.site.register(Response, ResponseAdmin)
 admin.site.register(Answer)
