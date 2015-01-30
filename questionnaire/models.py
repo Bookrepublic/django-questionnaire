@@ -164,7 +164,7 @@ class Response(models.Model):
 
 class Answer(models.Model):
     question = models.ForeignKey(Question)
-    response = models.ForeignKey(Response)
+    response = models.ForeignKey(Response, related_name='answers')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     body = models.TextField(blank=True, null=True)
