@@ -55,7 +55,7 @@ class QuestionnaireAdmin(admin.ModelAdmin):
             for a in answer:
                 row = {
                     'questionnaire': q,
-                    'user': a.response.user,
+                    'user': a.response.user.email.encode('utf-8') if a.response.user and a.response.user.email else '',
                     'sessionid': a.response.sessionid,
                     'question_set': strip_tags(a.question.questionset.heading).encode('utf-8'),
                     'question': strip_tags(a.question.text).encode('utf-8'),
