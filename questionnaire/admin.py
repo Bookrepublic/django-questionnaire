@@ -54,12 +54,12 @@ class QuestionnaireAdmin(admin.ModelAdmin):
             answer = Answer.objects.filter(response__questionnaire=q)
             for a in answer:
                 row = {
-                    'questionnaire': q,
-                    'user': a.response.user.email.encode('utf-8') if a.response.user and a.response.user.email else '',
-                    'sessionid': a.response.sessionid,
-                    'question_set': strip_tags(a.question.questionset.heading).encode('utf-8'),
-                    'question': strip_tags(a.question.text).encode('utf-8'),
-                    'answer': a.body
+                    'questionnaire': unicode(q.name).encode("utf-8"),
+                    'user': unicode(a.response.user.email).encode('utf-8') if a.response.user and a.response.user.email else '',
+                    'sessionid': unicode(a.response.sessionid).encode('utf-8'),
+                    'question_set': unicode(strip_tags(a.question.questionset.heading)).encode('utf-8'),
+                    'question': unicode(strip_tags(a.question.text)).encode('utf-8'),
+                    'answer': unicode(a.body).encode('utf-8')
                 }
                 writer.writerow(row)
         r = HttpResponse(buffer.getvalue(), mimetype='text/csv')
